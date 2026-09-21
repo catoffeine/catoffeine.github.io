@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.scss";
 import catLogo from "../assets/java_cat_coffee.png";
+import hseLogo from "../assets/hse_logo.svg";
 import javaLogo from "../assets/java_logo.png";
 
 const Arrow = () => (
@@ -9,6 +10,52 @@ const Arrow = () => (
     ↗
   </span>
 );
+
+const techTools = [
+  // { icon: "♨", name: "Java", description: "Core language I love" },
+  // { icon: "●", name: "Spring", description: "Spring Boot · Spring Security" },
+  // { icon: "◉", name: "PostgreSQL", description: "Reliable relationships" },
+  // { icon: "◆", name: "Docker", description: "Build, ship anywhere" },
+  { icon: "◆", name: "Git", description: "Version control for better code" },
+  { icon: "♙", name: "Linux", description: "Comfortable with terminal" },
+  // { icon: "◢", name: "Maven", description: "Build and dependencies" },
+  // { icon: "⚙", name: "REST APIs", description: "Design and develop" },
+  { icon: "C++", name: "C++", description: "Where my coding journey began" },
+  {
+    icon: "✦",
+    name: "More tech will appear here soon!",
+    description: "Always exploring what comes next",
+    isComingSoon: true,
+  },
+];
+
+const projectCards = [
+  {
+    icon: "♨",
+    title: "Cat Nap Scheduler",
+    copy: "A critically important system for balancing naps, snacks, and surprise keyboard walks.",
+    tags: ["Cats", "Naps", "Purring"],
+    url: "#projects",
+    action: "Coming soon",
+  },
+  {
+    icon: "◯",
+    title: "Meow Message Queue",
+    copy: "A highly reliable way to deliver meows in order — unless a cat sits on the keyboard.",
+    tags: ["Meows", "Queues", "Whiskers"],
+    url: "#projects",
+    action: "Coming soon",
+  },
+  {
+    icon: "↗",
+    title: "More projects here",
+    copy: "Find my actual work, experiments, and more caffeine-fueled ideas on GitHub.",
+    tags: ["GitHub", "Open source"],
+    url: "https://github.com/catoffeine",
+    action: "Visit GitHub",
+    isExternal: true,
+  },
+];
 
 function JavaParallaxCard() {
   const cardRef = useRef(null);
@@ -88,6 +135,29 @@ function JavaParallaxCard() {
 function App() {
   const navLinksRef = useRef(null);
   const indicatorTimerRef = useRef(null);
+  const activeSectionRef = useRef("home");
+  const quoteCardRef = useRef(null);
+
+  const scrollToTop = (event) => {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const openProject = (url, isExternal) => {
+    if (isExternal) {
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    window.location.hash = url;
+  };
+
+  const handleProjectKeyDown = (event, url, isExternal) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    event.preventDefault();
+    openProject(url, isExternal);
+  };
 
   const moveNavIndicator = (link, shouldMorph = true) => {
     const navLinks = navLinksRef.current;
@@ -130,6 +200,53 @@ function App() {
         "hero-is-covered",
         progress >= 0.88,
       );
+
+      const headerHeight =
+        document.querySelector(".site-header")?.offsetHeight ?? 0;
+      const scrollMarker =
+        window.scrollY + Math.max(headerHeight + 32, window.innerHeight * 0.6);
+      const sectionIds = ["home", "about", "stack", "projects", "contact"];
+      const activeSection = sectionIds.reduce((current, sectionId) => {
+        const section = document.getElementById(sectionId);
+        const sectionTop = section?.getBoundingClientRect().top ?? Infinity;
+
+        return sectionTop + window.scrollY <= scrollMarker
+          ? sectionId
+          : current;
+      }, "home");
+
+      if (activeSection !== activeSectionRef.current) {
+        activeSectionRef.current = activeSection;
+
+        const navLinks = navLinksRef.current;
+        const activeLink = navLinks?.querySelector(
+          `a[href="#${activeSection}"]`,
+        );
+
+        navLinks?.querySelectorAll("a").forEach((link) => {
+          link.classList.toggle("active", link === activeLink);
+        });
+        moveNavIndicator(activeLink);
+      }
+
+      const quoteCard = quoteCardRef.current;
+      if (quoteCard) {
+        const cardBounds = quoteCard.getBoundingClientRect();
+        const cardCenter = cardBounds.top + cardBounds.height / 2;
+        const viewportOffset =
+          (window.innerHeight / 2 - cardCenter) / window.innerHeight;
+        const parallaxProgress = Math.max(-1, Math.min(1, viewportOffset));
+
+        quoteCard.style.setProperty(
+          "--quote-tilt-x",
+          `${parallaxProgress * -16}deg`,
+        );
+        quoteCard.style.setProperty(
+          "--quote-tilt-y",
+          `${parallaxProgress * 11}deg`,
+        );
+      }
+
       frameId = 0;
     };
 
@@ -151,11 +268,39 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const sections = document.querySelectorAll(".reveal-section");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.7 },
+    );
+
+    document.documentElement.classList.add("reveal-ready");
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      observer.disconnect();
+      document.documentElement.classList.remove("reveal-ready");
+    };
+  }, []);
+
   return (
     <main>
       <header className="site-header">
         <nav className="nav container" aria-label="Primary navigation">
-          <a className="brand" href="#home" aria-label="catoffeine.dev home">
+          <a
+            className="brand"
+            href="#home"
+            aria-label="catoffeine.dev home"
+            onClick={scrollToTop}
+          >
             <img src={catLogo} alt="" />
             <span>
               catoffeine<span>.dev</span>
@@ -171,6 +316,7 @@ function App() {
             <a
               className="active"
               href="#home"
+              onClick={scrollToTop}
               onMouseEnter={(event) => moveNavIndicator(event.currentTarget)}
             >
               Home
@@ -192,12 +338,6 @@ function App() {
               onMouseEnter={(event) => moveNavIndicator(event.currentTarget)}
             >
               Projects
-            </a>
-            <a
-              href="#neetcode"
-              onMouseEnter={(event) => moveNavIndicator(event.currentTarget)}
-            >
-              NeetCode
             </a>
             <a
               href="#contact"
@@ -226,7 +366,7 @@ function App() {
               <br />
               come right after.
             </h1>
-            <p>Clean code. Real-world solutions. Constantly learning.</p>
+            <p>Constantly learning and petting cats.</p>
             <div className="hero-actions">
               <a className="button" href="#projects">
                 View my work <Arrow />
@@ -259,7 +399,7 @@ function App() {
       </section>
 
       <div className="site-content">
-        <section className="about section container" id="about">
+        <section className="about section container reveal-section" id="about">
           <div className="section-intro">
             <div className="eyebrow">
               <span className="line-icon">♙</span> About me
@@ -311,7 +451,13 @@ function App() {
               ],
             ].map(([icon, title, copy]) => (
               <article className="quality" key={title}>
-                <span>{icon}</span>
+                <span>
+                  {title === "HSE Student" ? (
+                    <img className="hse-logo" src={hseLogo} alt="" />
+                  ) : (
+                    icon
+                  )}
+                </span>
                 <div>
                   <h3>{title}</h3>
                   <p>{copy}</p>
@@ -319,7 +465,7 @@ function App() {
               </article>
             ))}
           </div>
-          <aside className="quote-card mountain-card">
+          <aside ref={quoteCardRef} className="quote-card mountain-card">
             <b>“</b>
             <blockquote>
               Better
@@ -334,7 +480,7 @@ function App() {
           </aside>
         </section>
 
-        <section className="stack section container" id="stack">
+        <section className="stack section container reveal-section" id="stack">
           <div className="section-intro compact">
             <div className="eyebrow">
               <span className="line-icon">◇</span> Tech stack
@@ -349,39 +495,23 @@ function App() {
             </p>
           </div>
           <div className="tool-grid">
-            {[
-              "Java",
-              "Spring",
-              "PostgreSQL",
-              "Docker",
-              "Git",
-              "Linux",
-              "Maven",
-              "REST APIs",
-            ].map((tool, index) => (
-              <div className="tool" key={tool}>
-                <span>{["♨", "●", "◉", "◆", "◆", "♙", "◢", "⚙"][index]}</span>
-                <strong>{tool}</strong>
-                <small>
-                  {
-                    [
-                      "Core language I love",
-                      "Spring Boot · Spring Security",
-                      "Reliable relationships",
-                      "Build, ship anywhere",
-                      "Version control for better code",
-                      "Comfortable with terminal",
-                      "Build and dependencies",
-                      "Design and develop",
-                    ][index]
-                  }
-                </small>
+            {techTools.map(({ icon, name, description, isComingSoon }) => (
+              <div
+                className={`tool${isComingSoon ? " tool--coming-soon" : ""}`}
+                key={name}
+              >
+                <span>{icon}</span>
+                <strong>{name}</strong>
+                <small>{description}</small>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="projects section container" id="projects">
+        <section
+          className="projects section container reveal-section"
+          id="projects"
+        >
           <div className="section-intro compact">
             <div className="eyebrow">
               <span className="line-icon">▱</span> Featured projects
@@ -395,55 +525,50 @@ function App() {
               A selection of my main projects, from practical backend solutions
               to learning experiments.
             </p>
-            <a className="button" href="#contact">
+            <a
+              className="button"
+              href="https://github.com/catoffeine"
+              target="_blank"
+              rel="noreferrer"
+            >
               View all projects <Arrow />
             </a>
           </div>
           <div className="project-grid">
-            {[
-              [
-                "Task Manager API",
-                "A REST API for task management with user authentication, task organization, and PostgreSQL backend.",
-                ["Java", "Spring Boot", "PostgreSQL"],
-              ],
-              [
-                "Real-time Chat",
-                "A WebSocket-based chat application with user authentication and a clean modern interface.",
-                ["Java", "WebSocket", "Docker"],
-              ],
-              [
-                "Library Management System",
-                "A full-featured backend system for library management, including book inventory and user roles.",
-                ["Java", "Spring Boot", "PostgreSQL"],
-              ],
-            ].map(([title, copy, tags]) => (
-              <article className="project" key={title}>
-                <a href="#contact" aria-label={`Open ${title}`}>
-                  ↗
-                </a>
-                <span className="project-icon">
-                  {title === "Task Manager API"
-                    ? "▤"
-                    : title === "Real-time Chat"
-                      ? "◯"
-                      : "◇"}
-                </span>
-                <h3>{title}</h3>
-                <p>{copy}</p>
-                <div className="tags">
-                  {tags.map((tag) => (
-                    <small key={tag}>{tag}</small>
-                  ))}
-                </div>
-                <button>
-                  View project <Arrow />
-                </button>
-              </article>
-            ))}
+            {projectCards.map(
+              ({ icon, title, copy, tags, url, action, isExternal }) => (
+                <article
+                  className="project"
+                  key={title}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Open ${title}`}
+                  onClick={() => openProject(url, isExternal)}
+                  onKeyDown={(event) =>
+                    handleProjectKeyDown(event, url, isExternal)
+                  }
+                >
+                  <span className="project-link" aria-hidden="true">
+                    ↗
+                  </span>
+                  <span className="project-icon">{icon}</span>
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                  <div className="tags">
+                    {tags.map((tag) => (
+                      <small key={tag}>{tag}</small>
+                    ))}
+                  </div>
+                  <span className="project-button">
+                    {action} <Arrow />
+                  </span>
+                </article>
+              ),
+            )}
           </div>
         </section>
 
-        <section className="contact container" id="contact">
+        <section className="contact container reveal-section" id="contact">
           <div>
             <h2>Let&apos;s build something great together.</h2>
             <p>Open to opportunities, collaborations, and interesting ideas.</p>
@@ -453,7 +578,7 @@ function App() {
           </a>
         </section>
         <footer className="container">
-          <a className="brand" href="#home">
+          <a className="brand" href="#home" onClick={scrollToTop}>
             <img src={catLogo} alt="" />
             <span>
               catoffeine<span>.dev</span>
