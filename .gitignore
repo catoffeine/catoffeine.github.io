@@ -1,0 +1,20 @@
+# Dependencies and generated builds
+node_modules/
+dist/
+.vite/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Design references
+design/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
