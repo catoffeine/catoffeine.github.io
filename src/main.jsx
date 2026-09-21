@@ -270,6 +270,9 @@ function App() {
 
   useEffect(() => {
     const sections = document.querySelectorAll(".reveal-section");
+    const revealThreshold = window.matchMedia("(max-width: 800px)").matches
+      ? 0.05
+      : 0.7;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -279,7 +282,7 @@ function App() {
           observer.unobserve(entry.target);
         });
       },
-      { threshold: 0.7 },
+      { threshold: revealThreshold },
     );
 
     document.documentElement.classList.add("reveal-ready");
