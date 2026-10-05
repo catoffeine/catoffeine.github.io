@@ -595,8 +595,49 @@ function App() {
   );
 }
 
+const IS_UNDER_CONSTRUCTION = true;
+
+function UnderConstruction() {
+  return (
+    <main className="construction-page">
+      <section className="construction-card" aria-labelledby="construction-title">
+        <div className="coffee-cup" aria-hidden="true">
+          <span className="steam steam--one" />
+          <span className="steam steam--two" />
+          <span className="steam steam--three" />
+          <span className="cup">☕</span>
+        </div>
+
+        <p className="construction-status">
+          <span /> Work in progress
+        </p>
+        <h1 id="construction-title">This website is under construction.</h1>
+        <p className="construction-copy">
+          Making coffee, petting cats, and building something new
+          <span className="loading-dots" aria-hidden="true">
+            <i>.</i><i>.</i><i>.</i>
+          </span>
+        </p>
+      </section>
+
+      <a
+        className="construction-contact"
+        href="https://t.me/iamacoffee"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Contact me on Telegram: @iamacoffee"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21.8 3.2 18.7 20c-.2 1.2-.9 1.5-1.9.9l-4.7-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.8 8.8-8c.4-.3-.1-.5-.6-.2L6.5 14 1.8 12.5c-1-.3-1-1 .2-1.5L20.4 3.9c.9-.3 1.6.2 1.4-.7Z" />
+        </svg>
+        <span>@iamacoffee</span>
+      </a>
+    </main>
+  );
+}
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    {IS_UNDER_CONSTRUCTION ? <UnderConstruction /> : <App />}
   </StrictMode>,
 );
